@@ -11,7 +11,11 @@ pg_instance_response=$(curl --request GET \
     --header "accept: application/json" \
     --header "authorization: Bearer $RENDER_REDEPLOY_KEY")
 
-echo "response: $response"
+# need to add error handling here to check if nothing came back and or if the response was unauthorized
+
+pg_instance_id=$(echo "$pg_instance_response" | jq -r '.[].postgres.id')
+
+echo "Current Postgres instance id: $pg_instance_id"
 
 # delete current postgres instance
 # create new postgres instance (DB name from env var)

@@ -11,9 +11,11 @@ https://api-docs.render.com/reference/list-postgres
 
 #### How to use
 
+ - Make sure that `jq` is install on your system (https://jqlang.org/download/)
  - Pull down repo
- - Update `.env` vars
+ - 
+ - Update `.env` vars using the `.env.sample` as a guide
  - Make sure you can run the script
-    * When you first pull down this repp, the script will not have the correct permissions to run this shell script
+    * When you first pull down this repo, the script will not have the correct permissions to run this shell script
     * At the root of the dir run: `chmod +x redeploy_on_render.sh`. This will grant execute permissions to the shell script
 
