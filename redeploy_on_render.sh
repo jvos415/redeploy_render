@@ -1,4 +1,18 @@
-# get current postgres instance
+#!/bin/bash
+
+# First load in the environment variables from the .env file
+set -a
+source "$(dirname "$0")/.env"
+set +a
+
+# Get current postgres instance
+pg_instance_response=$(curl --request GET \
+    --url "https://api.render.com/v1/postgres?name=$POSTGRES_INSTANCE_NAME&includeReplicas=true&limit=20" \
+    --header "accept: application/json" \
+    --header "authorization: Bearer $RENDER_REDEPLOY_KEY")
+
+echo "response: $response"
+
 # delete current postgres instance
 # create new postgres instance (DB name from env var)
 

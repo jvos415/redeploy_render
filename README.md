@@ -11,4 +11,9 @@ https://api-docs.render.com/reference/list-postgres
 
 #### How to use
 
-Haven't gotten here yet...
+ - Pull down repo
+ - Update `.env` vars
+ - Make sure you can run the script
+    * When you first pull down this repp, the script will not have the correct permissions to run this shell script
+    * At the root of the dir run: `chmod +x redeploy_on_render.sh`. This will grant execute permissions to the shell script
+
