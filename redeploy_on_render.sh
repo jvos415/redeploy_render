@@ -85,10 +85,17 @@ create_new_pg_instance() {
     exit 0
 }
 
-create_new_pg_instance
+verify_current_pg_instance_is_ready () {
+    # wait??? or maybe employ a retry loop that try to fetch DB address
+    echo "Verifying if the current pg instance is ready..."
+}
 
-# wait??? or maybe employ a retry loop that try to fetch DB address
+update_project_env_vars () {
+    # go to each project and replace env var for internal DB address with newly fetched address
+    echo "Updating project env vars..."
+}
 
-# go to each project and replace env var for internal DB address with newly fetched address
-
-# wait???? maybe run a get request for each project and see if we get a 200 back?
+verify_projects_are_ready () {
+    # wait???? maybe run a get request for each project and see if we get a 200 back?
+    echo "Verifying if the projects are ready..."
+}
