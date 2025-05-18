@@ -13,7 +13,17 @@ delete_pg_instance() {
         --header "accept: application/json" \
         --header "authorization: Bearer $RENDER_REDEPLOY_KEY")
 
-    echo "response: $pg_instance_response"
+    # Check if the response is empty
+    if [ -z "$pg_instance_response" ]; then
+        echo "No postgres instance found."
+        exit 1
+    fi
+
+    # Check if the response is an empty array
+    if echo "$pg_instance_response" | grep -q "^\[\]$"; then
+        echo "No postgres instance found."
+        exit 1
+    fi
 
     # Check if response is unauthorized
     if echo "$pg_instance_response" | grep -q "Unauthorized"; then
@@ -21,17 +31,23 @@ delete_pg_instance() {
         exit 1
     fi
 
-    # Check if the response is empty
-    if [ -z "$pg_instance_response" ]; then
-        echo "No postgres instance found."
-        exit 1
-    fi
-
     pg_instance_id=$(echo "$pg_instance_response" | jq -r '.[].postgres.id')
-
-    echo "Current Postgres instance id: $pg_instance_id"
+    echo "Postgres instance found."
 
     # Delete current postgres instance
+    echo "Deleting current pg instance..."
+    delete_response=$(curl --request DELETE \
+        --url "https://api.render.com/v1/postgres/$pg_instance_id" \
+        --header "accept: application/json" \
+        --header "authorization: Bearer $RENDER_REDEPLOY_KEY")
+
+    if [ -z "$delete_response" ]; then
+        echo "Postgres instance deleted successfully."
+        exit 0
+    fi
+
+    echo "Failed to delete postgres instance."
+    exit 1
 }
 
 create_new_pg_instance() {
