@@ -13,7 +13,19 @@ delete_pg_instance() {
         --header "accept: application/json" \
         --header "authorization: Bearer $RENDER_REDEPLOY_KEY")
 
-    # need to add error handling here to check if nothing came back and or if the response was unauthorized
+    echo "response: $pg_instance_response"
+
+    # Check if response is unauthorized
+    if echo "$pg_instance_response" | grep -q "Unauthorized"; then
+        echo "Unauthorized access. Please check your API key."
+        exit 1
+    fi
+
+    # Check if the response is empty
+    if [ -z "$pg_instance_response" ]; then
+        echo "No postgres instance found."
+        exit 1
+    fi
 
     pg_instance_id=$(echo "$pg_instance_response" | jq -r '.[].postgres.id')
 
