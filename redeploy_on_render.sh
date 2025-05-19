@@ -88,9 +88,35 @@ create_new_pg_instance() {
 verify_current_pg_instance_is_ready () {
     # wait??? or maybe employ a retry loop that try to fetch DB address
     echo "Verifying if the current pg instance is ready..."
+
+    pg_instance_response=$(curl --request GET \
+        --url "https://api.render.com/v1/postgres?name=$POSTGRES_INSTANCE_NAME&includeReplicas=true&limit=20" \
+        --header "accept: application/json" \
+        --header "authorization: Bearer $RENDER_API_KEY")
+
+    # Check if the response is empty
+    if [ -z "$pg_instance_response" ]; then
+        echo "Postgres instance is not yet ready."
+        exit 1
+    fi
+
+    # I may need to check for an empty array here... not sure yet
+        # if echo "$pg_instance_response" | grep -q "^\[\]$"; then
+        #     echo "No postgres instance found."
+        #     exit 1
+        # fi
+
+    # Check if response is unauthorized
+    if echo "$pg_instance_response" | grep -q "Unauthorized"; then
+        echo "Unauthorized access. Please check your API key."
+        exit 1
+    fi
+
+    echo "Current Postgres instance is ready."
+    exit 0
 }
 
-update_project_env_vars () {
+update_project_internal_db () {
     # go to each project and replace env var for internal DB address with newly fetched address
     echo "Updating project env vars..."
 }
@@ -99,3 +125,5 @@ verify_projects_are_ready () {
     # wait???? maybe run a get request for each project and see if we get a 200 back?
     echo "Verifying if the projects are ready..."
 }
+
+verify_current_pg_instance_is_ready
