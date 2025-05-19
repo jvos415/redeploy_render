@@ -118,12 +118,20 @@ verify_current_pg_instance_is_ready () {
 
 update_project_internal_db () {
     # go to each project and replace env var for internal DB address with newly fetched address
-    echo "Updating project env vars..."
+    echo "Updating project internal DB address..."
+
+    # First get the project (probably need the project Id)
+    # Update internal DB address
+    # Clear build cache and redeploy
 }
 
-verify_projects_are_ready () {
+verify_project_is_ready () {
     # wait???? maybe run a get request for each project and see if we get a 200 back?
-    echo "Verifying if the projects are ready..."
+    echo "Verifying that the project is running..."
+
+    # Send http request to website URL
+    # If 200 response we are good
+    # anything else we are not good
 }
 
 verify_current_pg_instance_is_ready
