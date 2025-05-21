@@ -85,7 +85,7 @@ create_new_pg_instance() {
     exit 0
 }
 
-verify_current_pg_instance_is_ready () {
+verify_current_pg_instance_is_ready() {
     # wait??? or maybe employ a retry loop that try to fetch DB address
     echo "Verifying if the current pg instance is ready..."
 
@@ -102,12 +102,14 @@ verify_current_pg_instance_is_ready () {
         # Check if the response is empty
         if [ -z "$pg_instance_response" ]; then
             echo "Postgres instance is not yet ready."
-        # Check for an empty array 
+        # Check for an empty array
         elif echo "$pg_instance_response" | grep -q "^\[\]$"; then
             echo "No postgres instance found."
+            exit 1
         # Check if response is unauthorized
         elif echo "$pg_instance_response" | grep -q "Unauthorized"; then
             echo "Unauthorized access. Please check your API key."
+            exit 1
         elif [ ! -z "$pg_instance_response" ]; then
             echo "Current Postgres instance is ready."
             exit 0
@@ -124,7 +126,7 @@ verify_current_pg_instance_is_ready () {
     done
 }
 
-update_project_internal_db () {
+update_project_internal_db() {
     # go to each project and replace env var for internal DB address with newly fetched address
     echo "Updating project internal DB address..."
 
@@ -133,7 +135,7 @@ update_project_internal_db () {
     # Clear build cache and redeploy
 }
 
-verify_project_is_ready () {
+verify_project_is_ready() {
     # wait???? maybe run a get request for each project and see if we get a 200 back?
     echo "Verifying that the project is running..."
 
@@ -142,4 +144,6 @@ verify_project_is_ready () {
     # anything else we are not good
 }
 
+# delete_current_pg_instance
+# create_new_pg_instance
 verify_current_pg_instance_is_ready
