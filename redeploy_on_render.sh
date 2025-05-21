@@ -142,7 +142,6 @@ verify_current_pg_instance_is_ready() {
 }
 
 update_internal_db_url_for_projects() {
-    # go to each project and replace env var for internal DB address with newly fetched address
     echo "Updating project internal DB address..."
 
     # Get postgres instance id
@@ -196,10 +195,11 @@ update_internal_db_url_for_projects() {
     # Clear build cache and redeploy
 }
 
-verify_project_is_ready() {
-    # wait???? maybe run a get request for each project and see if we get a 200 back?
-    echo "Verifying that the project is running..."
+verify_projects_are_ready() {
+    echo "Verifying that your projects are running..."
 
+    # Loop through each project (get projects from env vars)
+    # Need a long wait in case we are waiting for full build time
     # Send http request to website URL
     # If 200 response we are good
     # anything else we are not good
@@ -207,4 +207,5 @@ verify_project_is_ready() {
 
 # delete_current_pg_instance
 # create_new_pg_instance
-verify_current_pg_instance_is_ready
+# verify_current_pg_instance_is_ready
+# update_internal_db_url_for_projects
