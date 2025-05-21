@@ -86,50 +86,91 @@ create_new_pg_instance() {
 }
 
 verify_current_pg_instance_is_ready() {
-    # wait??? or maybe employ a retry loop that try to fetch DB address
     echo "Verifying if the current pg instance is ready..."
 
-    attempt=1
-    max_attempts=10
+    # attempt=1
+    # max_attempts=10
 
-    while [ $attempt -le $max_attempts ]; do
-        echo "Attempt $attempt of $max_attempts..."
-        pg_instance_response=$(curl --request GET \
-            --url "https://api.render.com/v1/postgres?name=$POSTGRES_INSTANCE_NAME&includeReplicas=true&limit=20" \
-            --header "accept: application/json" \
-            --header "authorization: Bearer $RENDER_API_KEY")
+    # while [ $attempt -le $max_attempts ]; do
+    #     echo "Attempt $attempt of $max_attempts..."
+    #  attempt=$((attempt + 1))
+    #     if [ $attempt -le $max_attempts ]; then
+    #         echo "Waiting for 5 seconds before retrying..."
+    #         sleep 5
+    #     else
+    #         echo "Max attempts reached. Postgres instance is not ready."
+    #         exit 1
+    #     fi
+    # done
 
-        # Check if the response is empty
-        if [ -z "$pg_instance_response" ]; then
-            echo "Postgres instance is not yet ready."
-        # Check for an empty array
-        elif echo "$pg_instance_response" | grep -q "^\[\]$"; then
-            echo "No postgres instance found."
-            exit 1
-        # Check if response is unauthorized
-        elif echo "$pg_instance_response" | grep -q "Unauthorized"; then
-            echo "Unauthorized access. Please check your API key."
-            exit 1
-        elif [ ! -z "$pg_instance_response" ]; then
-            echo "Current Postgres instance is ready."
-            exit 0
-        fi
+    pg_instance_response=$(curl --request GET \
+        --url "https://api.render.com/v1/postgres?name=$POSTGRES_INSTANCE_NAME&includeReplicas=true&limit=20" \
+        --header "accept: application/json" \
+        --header "authorization: Bearer $RENDER_API_KEY")
 
-        attempt=$((attempt + 1))
-        if [ $attempt -le $max_attempts ]; then
-            echo "Waiting for 5 seconds before retrying..."
-            sleep 5
-        else
-            echo "Max attempts reached. Postgres instance is not ready."
-            exit 1
-        fi
-    done
+    # Check if the response is empty
+    if [ -z "$pg_instance_response" ]; then
+        echo "Postgres instance is not yet ready."
+        exit 1
+    # Check for an empty array
+    elif echo "$pg_instance_response" | grep -q "^\[\]$"; then
+        echo "No postgres instance found."
+        exit 1
+    # Check if response is unauthorized
+    elif echo "$pg_instance_response" | grep -q "Unauthorized"; then
+        echo "Unauthorized access. Please check your API key."
+        exit 1
+    fi
 }
 
-update_project_internal_db() {
+update_internal_db_url_for_projects() {
     # go to each project and replace env var for internal DB address with newly fetched address
     echo "Updating project internal DB address..."
 
+    # Get postgres instance id
+    echo "Getting current pg instance..."
+    pg_instance_response=$(curl --request GET \
+        --url "https://api.render.com/v1/postgres?name=$POSTGRES_INSTANCE_NAME&includeReplicas=true&limit=20" \
+        --header "accept: application/json" \
+        --header "authorization: Bearer $RENDER_API_KEY")
+
+    # Check if the response is empty
+    if [ -z "$pg_instance_response" ]; then
+        echo "No postgres instance found."
+        exit 1
+    fi
+
+    # Check if the response is an empty array
+    if echo "$pg_instance_response" | grep -q "^\[\]$"; then
+        echo "No postgres instance found."
+        exit 1
+    fi
+
+    # Check if response is unauthorized
+    if echo "$pg_instance_response" | grep -q "Unauthorized"; then
+        echo "Unauthorized access. Please check your API key."
+        exit 1
+    fi
+
+    pg_instance_id=$(echo "$pg_instance_response" | jq -r '.[].postgres.id')
+    echo "Postgres instance found."
+
+    # Get internal DB address
+    pg_connection_info_response=$(curl --request GET \
+        --url https://api.render.com/v1/postgres/$postgres_instance_id/connection-info \
+        --header "accept: application/json" \
+        --header "authorization: Bearer $RENDER_API_KEY")
+
+    # Check if the connection info response is empty
+    if [ -z "$pg_connection_info_response" ]; then
+        echo "No postgres instance connection info found."
+        exit 1
+    fi
+
+    pg_internal_db_url=$(echo "$pg_instance_response" | jq -r '.internalConnectionString')
+    echo "Internal DB url found."
+
+    # Loop through each project (get projects from env vars)
     # First get the project (probably need the project Id)
     # Update internal DB address
     # Clear build cache and redeploy
