@@ -88,21 +88,6 @@ create_new_pg_instance() {
 verify_current_pg_instance_is_ready() {
     echo "Verifying if the current pg instance is ready..."
 
-    # attempt=1
-    # max_attempts=10
-
-    # while [ $attempt -le $max_attempts ]; do
-    #     echo "Attempt $attempt of $max_attempts..."
-    #  attempt=$((attempt + 1))
-    #     if [ $attempt -le $max_attempts ]; then
-    #         echo "Waiting for 5 seconds before retrying..."
-    #         sleep 5
-    #     else
-    #         echo "Max attempts reached. Postgres instance is not ready."
-    #         exit 1
-    #     fi
-    # done
-
     pg_instance_response=$(curl --request GET \
         --url "https://api.render.com/v1/postgres?name=$POSTGRES_INSTANCE_NAME&includeReplicas=true&limit=20" \
         --header "accept: application/json" \
@@ -110,7 +95,7 @@ verify_current_pg_instance_is_ready() {
 
     # Check if the response is empty
     if [ -z "$pg_instance_response" ]; then
-        echo "Postgres instance is not yet ready."
+        echo "No postgres instance found."
         exit 1
     # Check for an empty array
     elif echo "$pg_instance_response" | grep -q "^\[\]$"; then
@@ -121,6 +106,38 @@ verify_current_pg_instance_is_ready() {
         echo "Unauthorized access. Please check your API key."
         exit 1
     fi
+
+    pg_instance_id=$(echo "$pg_instance_response" | jq -r '.[].postgres.id')
+    echo "Postgres instance found."
+
+    attempt=1
+    max_attempts=10
+
+    while [ $attempt -le $max_attempts ]; do
+        echo "Checking postgres instance status..."
+        echo "Attempt $attempt of $max_attempts..."
+
+        # Check if the instance status is ready (available)
+        db_status_response=$(curl --request GET \
+            --url https://api.render.com/v1/postgres/$pg_instance_id \
+            --header "accept: application/json" \
+            --header "authorization: Bearer $RENDER_API_KEY")
+
+        db_status=$(echo "$db_status_response" | jq -r '.status')
+        if [ "$db_status" == "available" ]; then
+            echo "Postgres instance is ready."
+            exit 0
+        fi
+
+        attempt=$((attempt + 1))
+        if [ $attempt -le $max_attempts ]; then
+            echo "Waiting for 5 seconds before retrying..."
+            sleep 5
+        else
+            echo "Max attempts reached. Postgres instance is not ready."
+            exit 1
+        fi
+    done
 }
 
 update_internal_db_url_for_projects() {
@@ -169,6 +186,8 @@ update_internal_db_url_for_projects() {
 
     pg_internal_db_url=$(echo "$pg_instance_response" | jq -r '.internalConnectionString')
     echo "Internal DB url found."
+
+    echo "pg_internal_db_url: $pg_internal_db_url"
 
     # Loop through each project (get projects from env vars)
     # First get the project (probably need the project Id)
