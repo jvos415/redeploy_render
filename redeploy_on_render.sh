@@ -174,7 +174,13 @@ verify_current_pg_instance_is_ready() {
 update_internal_db_url_for_services() {
     # Ensure instance name is set
     if [ -z "$POSTGRES_INSTANCE_NAME" ]; then
-        echo "POSTGRES_INSTANCE_NAME needs to be included in your .env file"
+        echo "POSTGRES_INSTANCE_NAME needs to be included in your .env file."
+        exit 1
+    fi
+
+    # Ensure database url key is set
+    if [ -z "$RENDER_DATABASE_URL_KEY" ]; then
+        echo "RENDER_DATABASE_URL_KEY needs to be included in your .env file."
         exit 1
     fi
 
@@ -238,21 +244,35 @@ update_internal_db_url_for_services() {
             echo "Updating internal db url for service: $service_id"
 
             # Update internal DB address
-            # Clear build and restart service           
+            service_env_var_put_response=$(curl --request PUT \
+                --url https://api.render.com/v1/services/$service_id/env-vars/$RENDER_DATABASE_URL_KEY \
+                --header "accept: application/json" \
+                --header "authorization: Bearer $RENDER_API_KEY" \
+                --header "content-type: application/json" \
+                --data "{ \"value\": \"$pg_internal_db_url\" }")
+
+            # Check if response contains an error message
+            error_message=$(echo "$service_env_var_put_response" | jq -r '.message // empty')
+
+            if [ -n "$error_message" ]; then
+                echo "Failed to update environment variable: $error_message"
+                exit 1
+            fi
+
+            echo "Internal db url updated, triggering redeploy..."
+
+            # Clear cache and trigger redeploy
+            curl --request POST \
+                --url https://api.render.com/v1/services/$service_id/deploys \
+                --header "accept: application/json" \
+                --header "authorization: Bearer $RENDER_API_KEY" \
+                --header "content-type: application/json" \
+                --data '{ "clearCache": "clear" }'
         done
     fi
 
-    echo "Service Internal DB urls successfully updated"
+    echo "Internal DB urls for services have been successfully updated and a redeploys have been triggered."
     exit 0
-}
-
-verify_projects_are_ready() {
-    echo "Verifying that your projects are running..."
-    # Loop through each project (get projects from env vars)
-    # Need a long wait in case we are waiting for full build time
-    # Send http request to website URL
-    # If 200 response we are good
-    # anything else we are not good
 }
 
 # delete_current_pg_instance
