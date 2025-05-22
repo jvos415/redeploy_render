@@ -142,7 +142,7 @@ verify_current_pg_instance_is_ready() {
 }
 
 update_internal_db_url_for_projects() {
-    echo "Updating project internal DB address..."
+    echo "Updating internal DB URLs for projects..."
 
     # Get postgres instance id
     echo "Getting current pg instance..."
@@ -174,7 +174,7 @@ update_internal_db_url_for_projects() {
 
     # Get internal DB address
     pg_connection_info_response=$(curl --request GET \
-        --url https://api.render.com/v1/postgres/$postgres_instance_id/connection-info \
+        --url https://api.render.com/v1/postgres/$pg_instance_id/connection-info \
         --header "accept: application/json" \
         --header "authorization: Bearer $RENDER_API_KEY")
 
@@ -184,10 +184,10 @@ update_internal_db_url_for_projects() {
         exit 1
     fi
 
-    pg_internal_db_url=$(echo "$pg_instance_response" | jq -r '.internalConnectionString')
+    pg_internal_db_url=$(echo "$pg_connection_info_response" | jq -r '.internalConnectionString')
     echo "Internal DB url found."
 
-    echo "pg_internal_db_url: $pg_internal_db_url"
+    # figure out how to get a project (i believe it is called a service)
 
     # Loop through each project (get projects from env vars)
     # First get the project (probably need the project Id)
@@ -208,4 +208,4 @@ verify_projects_are_ready() {
 # delete_current_pg_instance
 # create_new_pg_instance
 # verify_current_pg_instance_is_ready
-# update_internal_db_url_for_projects
+update_internal_db_url_for_projects
