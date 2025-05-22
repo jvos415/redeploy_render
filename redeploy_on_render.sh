@@ -233,6 +233,57 @@ update_internal_db_url_for_services() {
         echo "RENDER_SERVICE_IDS have not been included in your .env file."
         echo "All render services will have their DATABASE_URL env var updated."
 
+        get_services_response=$(curl --request GET \
+            --url "https://api.render.com/v1/services?includePreviews=true&limit=20" \
+            --header "accept: application/json" \
+            --header "authorization: Bearer $RENDER_API_KEY")
+
+        # Check if the response is empty
+        if [ -z "$get_services_response" ]; then
+            echo "No services found."
+            exit 1
+        fi
+
+        # Check if the response is an empty array
+        if echo "$get_services_response" | grep -q "^\[\]$"; then
+            echo "No services found."
+            exit 1
+        fi
+
+        service_ids=$(echo "$get_services_response" | jq -r '.[].service.id')
+
+
+        # there is a bug here where service_ids seems to be empty
+        for id in $service_ids; do
+            echo
+            echo "Updating internal db url for service: $service_id"
+
+            # Update internal DB address
+            service_env_var_put_response=$(curl --request PUT \
+                --url https://api.render.com/v1/services/$service_id/env-vars/$RENDER_DATABASE_URL_KEY \
+                --header "accept: application/json" \
+                --header "authorization: Bearer $RENDER_API_KEY" \
+                --header "content-type: application/json" \
+                --data "{ \"value\": \"$pg_internal_db_url\" }")
+
+            # Check if response contains an error message
+            error_message=$(echo "$service_env_var_put_response" | jq -r '.message // empty')
+
+            if [ -n "$error_message" ]; then
+                echo "Failed to update environment variable: $error_message"
+                exit 1
+            fi
+
+            echo "Internal db url updated, triggering redeploy..."
+
+            # Clear cache and trigger redeploy
+            curl --request POST \
+                --url https://api.render.com/v1/services/$service_id/deploys \
+                --header "accept: application/json" \
+                --header "authorization: Bearer $RENDER_API_KEY" \
+                --header "content-type: application/json" \
+                --data '{ "clearCache": "clear" }'
+        done
     else
         echo "Service ids found in env vars."
         echo "Updating internal DB vars for these services only."
