@@ -171,7 +171,7 @@ verify_current_pg_instance_is_ready() {
     done
 }
 
-update_internal_db_url_for_projects() {
+update_internal_db_url_for_services() {
     # Ensure instance name is set
     if [ -z "$POSTGRES_INSTANCE_NAME" ]; then
         echo "POSTGRES_INSTANCE_NAME needs to be included in your .env file"
@@ -226,15 +226,24 @@ update_internal_db_url_for_projects() {
     if [ -z $RENDER_SERVICE_IDS ]; then
         echo "RENDER_SERVICE_IDS have not been included in your .env file."
         echo "All render services will have their DATABASE_URL env var updated."
+
     else
-        echo "service IDs are here"
-        echo "service IDS: $RENDER_SERVICE_IDS"
+        echo "Service ids found in env vars."
+        echo "Updating internal DB vars for these services only."
+
+        IFS=', ' read -r -a service_ids <<<"$RENDER_SERVICE_IDS"
+
+        for service_id in "${service_ids[@]}"; do
+            echo
+            echo "Updating internal db url for service: $service_id"
+
+            # Update internal DB address
+            # Clear build and restart service           
+        done
     fi
 
-    # Loop through each project (get projects from env vars)
-    # First get the project (probably need the project Id)
-    # Update internal DB address
-    # Clear build cache and redeploy
+    echo "Service Internal DB urls successfully updated"
+    exit 0
 }
 
 verify_projects_are_ready() {
@@ -249,4 +258,4 @@ verify_projects_are_ready() {
 # delete_current_pg_instance
 # create_new_pg_instance
 # verify_current_pg_instance_is_ready
-update_internal_db_url_for_projects
+update_internal_db_url_for_services

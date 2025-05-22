@@ -11,7 +11,7 @@ https://api-docs.render.com/reference/list-postgres
 
 #### How to use
 
- - Make sure that `jq` is install on your system (https://jqlang.org/download/)
+ - Make sure that `jq` is installed on your system (https://jqlang.org/download/)
  - Pull down repo
  - 
  - Update `.env` vars using the `.env.sample` as a guide
