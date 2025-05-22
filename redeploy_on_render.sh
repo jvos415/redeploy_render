@@ -6,6 +6,12 @@ source "$(dirname "$0")/.env"
 set +a
 
 delete_current_pg_instance() {
+    # Ensure instance name is set
+    if [ -z "$POSTGRES_INSTANCE_NAME" ]; then
+        echo "POSTGRES_INSTANCE_NAME needs to be included in your .env file."
+        exit 1
+    fi
+
     # Get current postgres instance
     echo "Getting current pg instance..."
     pg_instance_response=$(curl --request GET \
@@ -51,6 +57,24 @@ delete_current_pg_instance() {
 }
 
 create_new_pg_instance() {
+    # Ensure instance name is set
+    if [ -z "$POSTGRES_INSTANCE_NAME" ]; then
+        echo "POSTGRES_INSTANCE_NAME needs to be included in your .env file."
+        exit 1
+    fi
+
+    # Ensure workspace id is set
+    if [ -z "$RENDER_WORKSPACE_ID" ]; then
+        echo "RENDER_WORKSPACE_ID needs to be included in your .env file."
+        exit 1
+    fi
+
+    # Ensure postgres version is set
+    if [ -z "$POSTGRES_VERSION" ]; then
+        echo "POSTGRES_VERSION needs to be included in your .env file."
+        exit 1
+    fi
+
     # Create new postgres instance (DB name from env var)
     echo "Creating new pg instance with the name '$POSTGRES_INSTANCE_NAME'..."
 
@@ -86,6 +110,12 @@ create_new_pg_instance() {
 }
 
 verify_current_pg_instance_is_ready() {
+    # Ensure instance name is set
+    if [ -z "$POSTGRES_INSTANCE_NAME" ]; then
+        echo "POSTGRES_INSTANCE_NAME needs to be included in your .env file."
+        exit 1
+    fi
+
     echo "Verifying if the current pg instance is ready..."
 
     pg_instance_response=$(curl --request GET \
@@ -114,7 +144,7 @@ verify_current_pg_instance_is_ready() {
     max_attempts=10
 
     while [ $attempt -le $max_attempts ]; do
-        echo 
+        echo
         echo "Checking postgres instance status..."
         echo "Attempt $attempt of $max_attempts..."
 
@@ -142,6 +172,12 @@ verify_current_pg_instance_is_ready() {
 }
 
 update_internal_db_url_for_projects() {
+    # Ensure instance name is set
+    if [ -z "$POSTGRES_INSTANCE_NAME" ]; then
+        echo "POSTGRES_INSTANCE_NAME needs to be included in your .env file"
+        exit 1
+    fi
+
     echo "Updating internal DB URLs for projects..."
 
     # Get postgres instance id
@@ -187,7 +223,13 @@ update_internal_db_url_for_projects() {
     pg_internal_db_url=$(echo "$pg_connection_info_response" | jq -r '.internalConnectionString')
     echo "Internal DB url found."
 
-    # figure out how to get a project (i believe it is called a service)
+    if [ -z $RENDER_SERVICE_IDS ]; then
+        echo "RENDER_SERVICE_IDS have not been included in your .env file."
+        echo "All render services will have their DATABASE_URL env var updated."
+    else
+        echo "service IDs are here"
+        echo "service IDS: $RENDER_SERVICE_IDS"
+    fi
 
     # Loop through each project (get projects from env vars)
     # First get the project (probably need the project Id)
@@ -197,7 +239,6 @@ update_internal_db_url_for_projects() {
 
 verify_projects_are_ready() {
     echo "Verifying that your projects are running..."
-
     # Loop through each project (get projects from env vars)
     # Need a long wait in case we are waiting for full build time
     # Send http request to website URL
