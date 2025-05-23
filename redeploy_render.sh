@@ -330,9 +330,9 @@ usage() {
 Usage: $0 [options]
 
 Options:
-  -delete_db              Deletes current pg instance
-  -create_db              Creates a new pg instance
-  -verify_ready           Verifies that the current pg instance is ready (available)
+  -delete_db              Deletes current postgres instance
+  -create_db              Creates a new postgres instance
+  -verify_ready           Verifies that the current postgres instance is ready (available)
   -update_db_urls         Updates all internal db urls for services from env var RENDER_SERVICES_IDS or, if RENDER_SERVICES_IDS is commented out, then automatically update internal db urls for all services
   -redeploy               Runs all above steps in order
   -h, --help              Show this help message
