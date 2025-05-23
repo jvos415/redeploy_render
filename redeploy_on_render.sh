@@ -252,15 +252,13 @@ update_internal_db_url_for_services() {
 
         service_ids=$(echo "$get_services_response" | jq -r '.[].service.id')
 
-
-        # there is a bug here where service_ids seems to be empty
         for id in $service_ids; do
             echo
-            echo "Updating internal db url for service: $service_id"
+            echo "Updating internal db url for service: $id"
 
             # Update internal DB address
             service_env_var_put_response=$(curl --request PUT \
-                --url https://api.render.com/v1/services/$service_id/env-vars/$RENDER_DATABASE_URL_KEY \
+                --url https://api.render.com/v1/services/$id/env-vars/$RENDER_DATABASE_URL_KEY \
                 --header "accept: application/json" \
                 --header "authorization: Bearer $RENDER_API_KEY" \
                 --header "content-type: application/json" \
@@ -278,7 +276,7 @@ update_internal_db_url_for_services() {
 
             # Clear cache and trigger redeploy
             curl --request POST \
-                --url https://api.render.com/v1/services/$service_id/deploys \
+                --url https://api.render.com/v1/services/$id/deploys \
                 --header "accept: application/json" \
                 --header "authorization: Bearer $RENDER_API_KEY" \
                 --header "content-type: application/json" \
@@ -329,4 +327,4 @@ update_internal_db_url_for_services() {
 # delete_current_pg_instance
 # create_new_pg_instance
 # verify_current_pg_instance_is_ready
-update_internal_db_url_for_services
+# update_internal_db_url_for_services
