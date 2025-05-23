@@ -324,7 +324,48 @@ update_internal_db_url_for_services() {
     exit 0
 }
 
-# delete_current_pg_instance
-# create_new_pg_instance
-# verify_current_pg_instance_is_ready
-# update_internal_db_url_for_services
+# --- Help Menu ---
+usage() {
+    cat <<EOF
+Usage: $0 [options]
+
+Options:
+  -delete_db              Deletes current pg instance
+  -create_db              Creates a new pg instance
+  -verify_ready           Verifies that the current pg instance is ready (available)
+  -update_db_urls         Updates all internal db urls for services from env var RENDER_SERVICES_IDS or, if RENDER_SERVICES_IDS is commented out, then automatically update internal db urls for all services
+  -redeploy               Runs all above steps in order
+  -h, --help              Show this help message
+EOF
+}
+
+# --- Parse Arguments ---
+if [ $# -eq 0 ]; then
+    usage
+    exit 1
+fi
+
+while [[ "$1" != "" ]]; do
+    case $1 in
+    -delete_db) delete_current_pg_instance ;;
+    -create_db) create_new_pg_instance ;;
+    -verify_ready) verify_current_pg_instance_is_ready ;;
+    -update_db_urls) update_internal_db_url_for_services ;;
+    -redeploy)
+        delete_current_pg_instance
+        create_new_pg_instance
+        verify_current_pg_instance_is_ready
+        update_internal_db_url_for_services
+        ;;
+    -h | --help)
+        usage
+        exit 0
+        ;;
+    *)
+        echo "Unknown option: $1"
+        usage
+        exit 1
+        ;;
+    esac
+    shift
+done
