@@ -49,7 +49,7 @@ delete_current_pg_instance() {
 
     if [ -z "$delete_response" ]; then
         echo "Postgres instance deleted successfully."
-        exit 0
+        return 0
     fi
 
     echo "Failed to delete postgres instance: $delete_response"
@@ -106,7 +106,7 @@ create_new_pg_instance() {
     fi
 
     echo "New pg instance created successfully."
-    exit 0
+    return 0
 }
 
 verify_current_pg_instance_is_ready() {
@@ -157,7 +157,7 @@ verify_current_pg_instance_is_ready() {
         db_status=$(echo "$db_status_response" | jq -r '.status')
         if [ "$db_status" == "available" ]; then
             echo "Postgres instance is ready."
-            exit 0
+            return 0
         fi
 
         attempt=$((attempt + 1))
@@ -321,10 +321,10 @@ update_internal_db_url_for_services() {
     fi
 
     echo "Internal DB urls for services have been successfully updated and a redeploys have been triggered."
-    exit 0
+    return 0
 }
 
-# --- Help Menu ---
+# --- Help Menu --- #
 usage() {
     cat <<EOF
 Usage: $0 [options]
@@ -339,7 +339,7 @@ Options:
 EOF
 }
 
-# --- Parse Arguments ---
+# --- Parse Arguments --- #
 if [ $# -eq 0 ]; then
     usage
     exit 1
