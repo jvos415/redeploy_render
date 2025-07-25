@@ -4,7 +4,7 @@
 -   Of course this repo will only work if you are using a Render postgres instance and have Render services set up to use that same postgres instance. You should, in the least, have your services set up and working prior to using this script.
 -   This script can run individual actions or all the actions back-to-back in order to fully redeploy Render services with the new postgres instance db url.
 -   This script allows you to delete an old postgres instance, create a new postgres instance, verify that a postgres instance is ready (i.e. status is available) and update the database urls for all services or a specific set of services that you specify in your `.env` file.
--   There is no coding required to use this repo. Simply create a `.env.` file, fill in missing fields (more on this below) and run it. Yep, that's it.
+-   There is no coding required to use this repo. Simply create a `.env` file, fill in missing fields (more on this below) and run it. Yep, that's it.
 -   Fork this repo and build on it if you need additional customization.
 
 # Script Set Up
