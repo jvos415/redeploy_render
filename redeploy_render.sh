@@ -141,7 +141,7 @@ verify_current_pg_instance_is_ready() {
     echo "Postgres instance found."
 
     attempt=1
-    max_attempts=10
+    max_attempts=12
 
     while [ $attempt -le $max_attempts ]; do
         echo
