@@ -15,7 +15,7 @@
 
 ### Make Sure jq Is Installed
 
-- Make sure that `jq` is installed on your system. (https://jqlang.org/download/)
+- Make sure that `jq` is installed on your system. [jq download page](https://jqlang.org/download/)
 
 ### Pull Down Repo and Create .env File
 

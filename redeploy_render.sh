@@ -141,7 +141,7 @@ verify_current_pg_instance_is_ready() {
     echo "Postgres instance found."
 
     attempt=1
-    max_attempts=12
+    max_attempts=14
 
     while [ $attempt -le $max_attempts ]; do
         echo
@@ -162,8 +162,8 @@ verify_current_pg_instance_is_ready() {
 
         attempt=$((attempt + 1))
         if [ $attempt -le $max_attempts ]; then
-            echo "Waiting for 8 seconds before retrying..."
-            sleep 8
+            echo "Waiting for 10 seconds before retrying..."
+            sleep 10
         else
             echo "Max attempts reached. Postgres instance is not ready."
             exit 1
